@@ -6,6 +6,7 @@ Implemented with reference to [Write Yourself a Scheme in 48 Hours](https://en.w
 
 ## How to execute
 
-$ stack run
+$ stack run -- '(- (+ 1 2 (* 4 5) (/ 4 2)) 10)'
+15
 
-But you can't do anything yet.
+It can only do four arithmetic operations yet.
