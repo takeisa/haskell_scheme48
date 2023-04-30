@@ -22,7 +22,10 @@ primitives :: [(String, [LispVal] -> ThrowsError LispVal)]
 primitives = [("+", numericBinOp (+)),
               ("-", numericBinOp (-)),
               ("*", numericBinOp (*)),
-              ("/", numericBinOp div)]
+              ("/", numericBinOp div),
+              ("mod", numericBinOp mod),
+              ("quotinent", numericBinOp quot),
+              ("remainder", numericBinOp rem)]
 
 numericBinOp :: (Integer -> Integer -> Integer) -> [LispVal] -> ThrowsError LispVal
 numericBinOp op singleValue@[_] = throwError $ NumArgs 2 singleValue
