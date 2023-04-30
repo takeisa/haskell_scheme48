@@ -1,6 +1,6 @@
 module Lisp (
-  LispVal(LvAtom, LvList, LvDottedList, LvNumber, LvString, LvBool), 
-  showVal) where
+  LispVal(..), 
+  showVal, showElements) where
 import Prelude hiding (last)
 
 data LispVal = 

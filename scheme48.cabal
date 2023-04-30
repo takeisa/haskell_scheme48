@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Error
       Eval
       Lib
       Lisp
@@ -36,6 +37,7 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , mtl
     , parsec
   default-language: Haskell2010
 
@@ -48,6 +50,7 @@ executable scheme48-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , mtl
     , parsec
     , scheme48
   default-language: Haskell2010
@@ -62,6 +65,7 @@ test-suite scheme48-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , mtl
     , parsec
     , scheme48
   default-language: Haskell2010

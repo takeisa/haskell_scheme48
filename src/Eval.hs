@@ -1,28 +1,33 @@
 module Eval (eval) where
 import Lisp (LispVal (LvString, LvNumber, LvBool, LvList, LvAtom))
+import Error (ThrowsError, LispError(..))
+import Control.Monad.Except (throwError)
 
-eval :: LispVal -> LispVal
-eval val@(LvString _) = val
-eval val@(LvNumber _) = val
-eval val@(LvBool _) = val
-eval (LvList [LvAtom "quote", val]) = val
-eval (LvList (LvAtom func: args)) =
-    apply func $ map eval args
+eval :: LispVal -> ThrowsError LispVal
+eval val@(LvString _) = return val
+eval val@(LvNumber _) = return val
+eval val@(LvBool _) = return val
+eval (LvList [LvAtom "quote", val]) = return val
+eval (LvList (LvAtom func: args)) = 
+    mapM eval args >>= apply func
+eval badForm = throwError $ BadSpecialForm "Unrecognized special form" badForm
 
-apply :: String -> [LispVal] -> LispVal
+apply :: String -> [LispVal] -> ThrowsError LispVal
 -- maybe :: b -> (a -> b) -> Maybe a -> b
-apply func args = maybe (LvBool False) ($ args) $ lookup func primitives
+apply func args = maybe (throwError $ NotFunction "Unrecognized primitive function args" func) 
+                        ($ args)
+                        (lookup func primitives)
 
-primitives :: [(String, [LispVal] -> LispVal)]
+primitives :: [(String, [LispVal] -> ThrowsError LispVal)]
 primitives = [("+", numericBinOp (+)),
               ("-", numericBinOp (-)),
               ("*", numericBinOp (*)),
               ("/", numericBinOp div)]
 
-numericBinOp :: (Integer -> Integer -> Integer) -> [LispVal] -> LispVal
-numericBinOp op args = LvNumber $ foldl1 op $ map unpackNum args
+numericBinOp :: (Integer -> Integer -> Integer) -> [LispVal] -> ThrowsError LispVal
+numericBinOp op singleValue@[_] = throwError $ NumArgs 2 singleValue
+numericBinOp op args = mapM unpackNum args >>= return . LvNumber . foldl1 op
 
-unpackNum :: LispVal -> Integer
-unpackNum (LvNumber n) = n
--- TODO error
-unpackNum _ = 0
+unpackNum :: LispVal -> ThrowsError Integer
+unpackNum (LvNumber n) = return n
+unpackNum notNum = throwError $ TypeMismatch "number" notNum
