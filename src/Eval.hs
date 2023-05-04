@@ -2,6 +2,7 @@ module Eval (eval) where
 import Lisp (LispVal (LvString, LvNumber, LvBool, LvList, LvAtom))
 import Error (ThrowsError, LispError(..))
 import Control.Monad.Except (throwError, MonadError)
+import Foreign.C (throwErrno)
 
 eval :: LispVal -> ThrowsError LispVal
 eval val@(LvString _) = return val
@@ -31,7 +32,10 @@ primitives = [("+", numericBinOp (+)),
               (">", numBoolBinOp (>)),
               ("/=", numBoolBinOp (/=)),
               (">=", numBoolBinOp (>=)),
-              ("<=", numBoolBinOp (<=))]
+              ("<=", numBoolBinOp (<=)),
+              -- TODO Functions not defined in Scheme
+              ("&&", boolBoolBinOp (&&)),
+              ("||", boolBoolBinOp (||))]
 
 numericBinOp :: (Integer -> Integer -> Integer) -> [LispVal] -> ThrowsError LispVal
 numericBinOp _op singleValue@[_] = throwError $ NumArgs 2 singleValue
@@ -53,9 +57,13 @@ boolBinOp unpacker op args =
 numBoolBinOp :: (Integer -> Integer -> Bool) -> [LispVal] -> ThrowsError LispVal
 numBoolBinOp = boolBinOp unpackNum
 
+boolBoolBinOp :: (Bool -> Bool -> Bool) -> [LispVal] -> ThrowsError LispVal
+boolBoolBinOp = boolBinOp unpackBool
+
 unpackNum :: LispVal -> ThrowsError Integer
 unpackNum (LvNumber n) = return n
 unpackNum notNum = throwError $ TypeMismatch "number" notNum
 
--- unpacker (LvNumber value) = value
--- numBoolBinOp 
+unpackBool :: LispVal -> ThrowsError Bool
+unpackBool (LvBool b) = return b
+unpackBool notBool  = throwError $ TypeMismatch "boolean"  notBool
