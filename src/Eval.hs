@@ -65,6 +65,7 @@ numBoolBinOp = boolBinOp unpackNum
 boolBoolBinOp :: (Bool -> Bool -> Bool) -> [LispVal] -> ThrowsError LispVal
 boolBoolBinOp = boolBinOp unpackBool
 
+stringBoolBinOp :: (String -> String -> Bool) -> [LispVal] -> ThrowsError LispVal
 stringBoolBinOp = boolBinOp unpackString
 
 unpackNum :: LispVal -> ThrowsError Integer
