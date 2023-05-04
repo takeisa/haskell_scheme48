@@ -35,7 +35,12 @@ primitives = [("+", numericBinOp (+)),
               ("<=", numBoolBinOp (<=)),
               -- TODO Functions not defined in Scheme
               ("&&", boolBoolBinOp (&&)),
-              ("||", boolBoolBinOp (||))]
+              ("||", boolBoolBinOp (||)),
+              ("string=?", stringBoolBinOp (==)),
+              ("string<?", stringBoolBinOp (<)),
+              ("string>?", stringBoolBinOp (>)),
+              ("string<=?", stringBoolBinOp (<=)),
+              ("string>=?", stringBoolBinOp (>=))]
 
 numericBinOp :: (Integer -> Integer -> Integer) -> [LispVal] -> ThrowsError LispVal
 numericBinOp _op singleValue@[_] = throwError $ NumArgs 2 singleValue
@@ -60,10 +65,16 @@ numBoolBinOp = boolBinOp unpackNum
 boolBoolBinOp :: (Bool -> Bool -> Bool) -> [LispVal] -> ThrowsError LispVal
 boolBoolBinOp = boolBinOp unpackBool
 
+stringBoolBinOp = boolBinOp unpackString
+
 unpackNum :: LispVal -> ThrowsError Integer
 unpackNum (LvNumber n) = return n
 unpackNum notNum = throwError $ TypeMismatch "number" notNum
 
 unpackBool :: LispVal -> ThrowsError Bool
 unpackBool (LvBool b) = return b
-unpackBool notBool  = throwError $ TypeMismatch "boolean"  notBool
+unpackBool notBool = throwError $ TypeMismatch "boolean"  notBool
+
+unpackString :: LispVal -> ThrowsError String
+unpackString (LvString s) = return s
+unpackString notString = throwError $ TypeMismatch "string" notString
