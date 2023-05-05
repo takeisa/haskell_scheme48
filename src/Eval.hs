@@ -9,6 +9,12 @@ eval val@(LvString _) = return val
 eval val@(LvNumber _) = return val
 eval val@(LvBool _) = return val
 eval (LvList [LvAtom "quote", val]) = return val
+eval (LvList [LvAtom "if", pred, conseq, alt]) =
+    do 
+        result <- eval pred
+        case result of
+            LvBool False -> eval alt
+            otherwise -> eval conseq
 eval (LvList (LvAtom func: args)) = 
     mapM eval args >>= apply func
 eval badForm = throwError $ BadSpecialForm "Unrecognized special form" badForm
