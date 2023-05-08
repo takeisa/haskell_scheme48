@@ -1,5 +1,5 @@
 module Eval (eval) where
-import Lisp (LispVal (LvString, LvNumber, LvBool, LvList, LvAtom))
+import Lisp (LispVal (LvString, LvNumber, LvBool, LvList, LvAtom, LvDottedList))
 import Error (ThrowsError, LispError(..))
 import Control.Monad.Except (throwError, MonadError)
 import Foreign.C (throwErrno)
@@ -46,7 +46,8 @@ primitives = [("+", numericBinOp (+)),
               ("string<?", stringBoolBinOp (<)),
               ("string>?", stringBoolBinOp (>)),
               ("string<=?", stringBoolBinOp (<=)),
-              ("string>=?", stringBoolBinOp (>=))]
+              ("string>=?", stringBoolBinOp (>=)),
+              ("car", car)]
 
 numericBinOp :: (Integer -> Integer -> Integer) -> [LispVal] -> ThrowsError LispVal
 numericBinOp _op singleValue@[_] = throwError $ NumArgs 2 singleValue
@@ -85,3 +86,9 @@ unpackBool notBool = throwError $ TypeMismatch "boolean"  notBool
 unpackString :: LispVal -> ThrowsError String
 unpackString (LvString s) = return s
 unpackString notString = throwError $ TypeMismatch "string" notString
+
+car :: [LispVal] -> ThrowsError LispVal
+car [LvList (x : _xs)] = return x
+car [LvDottedList (x : _xs) _] = return x
+car [badArg] = throwError $ TypeMismatch "pair" badArg
+car badArgList = throwError $ NumArgs 1 badArgList
