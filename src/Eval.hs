@@ -47,7 +47,8 @@ primitives = [("+", numericBinOp (+)),
               ("string>?", stringBoolBinOp (>)),
               ("string<=?", stringBoolBinOp (<=)),
               ("string>=?", stringBoolBinOp (>=)),
-              ("car", car)]
+              ("car", car),
+              ("cdr", cdr)]
 
 numericBinOp :: (Integer -> Integer -> Integer) -> [LispVal] -> ThrowsError LispVal
 numericBinOp _op singleValue@[_] = throwError $ NumArgs 2 singleValue
@@ -92,3 +93,9 @@ car [LvList (x : _xs)] = return x
 car [LvDottedList (x : _xs) _] = return x
 car [badArg] = throwError $ TypeMismatch "pair" badArg
 car badArgList = throwError $ NumArgs 1 badArgList
+
+cdr :: [LispVal] -> ThrowsError LispVal
+cdr [LvList (_ : xs)] = return $ LvList xs
+cdr [LvDottedList _xs last] = return $ last
+cdr [badArg] = throwError $ TypeMismatch "pair" badArg
+cdr badArgList = throwError $ NumArgs 1 badArgList
