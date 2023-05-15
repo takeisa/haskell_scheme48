@@ -49,7 +49,8 @@ primitives = [("+", numericBinOp (+)),
               ("string>=?", stringBoolBinOp (>=)),
               ("car", car),
               ("cdr", cdr),
-              ("cons", cons)]
+              ("cons", cons),
+              ("equal?", equal)]
 
 numericBinOp :: (Integer -> Integer -> Integer) -> [LispVal] -> ThrowsError LispVal
 numericBinOp _op singleValue@[_] = throwError $ NumArgs 2 singleValue
@@ -107,3 +108,18 @@ cons [x, LvList xs] = return $ LvList (x : xs)
 cons [x, LvDottedList xs last] = return $ LvDottedList (x : xs) last
 cons [x1, x2] = return $ LvDottedList [x1] x2
 cons badArgList = throwError $ NumArgs 2 badArgList
+
+{- TODO To implement eq?, eqv? add id to the LispVal data type. -}
+equal :: [LispVal] -> ThrowsError LispVal
+equal [(LvBool value1), (LvBool value2)] = return $ LvBool $ value1 == value2
+equal [(LvNumber value1), (LvNumber value2)] = return $ LvBool $ value1 == value2
+equal [(LvAtom value1), (LvAtom value2)] = return $ LvBool $ value1 == value2
+equal [(LvString string1), (LvString string2)] = return $ LvBool $ string1 == string2
+equal [(LvList list1), (LvList list2)] = return $ LvBool $ 
+        (length list1 == length list2) && (all equalPair $ zip list1 list2)
+    where equalPair (x1, x2) = case equal [x1, x2] of
+                                    Left _err -> False
+                                    Right (LvBool value) -> value
+
+equal [_, _] = return $ LvBool False
+equal badArgList = throwError $ NumArgs 2 badArgList
